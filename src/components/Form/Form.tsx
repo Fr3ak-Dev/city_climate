@@ -4,7 +4,11 @@ import styles from './Form.module.css';
 import { SearchType } from "../../types";
 import Alert from "../Alert/Alert";
 
-export default function Form() {
+type FormProps = {
+    fetchWeather: () => void
+}
+
+export default function Form({ fetchWeather }: FormProps) {
 
     const [search, setSearch] = useState<SearchType>({
         city: '',
@@ -26,12 +30,13 @@ export default function Form() {
             setAlert('All fields are required');
             return;
         }
+        fetchWeather();
     }
 
     return (
-        <form 
-        className={styles.form}
-        onSubmit={handleSubmit}
+        <form
+            className={styles.form}
+            onSubmit={handleSubmit}
         >
             {alert && <Alert>{alert}</Alert>}
             <div className={styles.field}>
@@ -52,7 +57,7 @@ export default function Form() {
                     name="country"
                     value={search.country}
                     onChange={handleChange}
-                    // className="text-black"
+                // className="text-black"
                 >
                     <option value="">-- Select a country --</option>
                     {countries.map(country => (
