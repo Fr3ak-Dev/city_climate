@@ -1,18 +1,33 @@
 import axios from 'axios'
-import { SearchType, Weather } from '../types';
+import { z } from 'zod'
+import { SearchType } from '../types';
 
 // Type Guard or Assertions
 // Type Guards are functions that return a boolean value indicating whether the provided value is of a specific type.
-function isWeatherResponse(weather: unknown) : weather is Weather {
-    return (
-        Boolean(weather) &&
-        typeof weather === 'object' &&
-        typeof (weather as Weather).name === 'string' &&
-        typeof (weather as Weather).main.temp === 'number' &&
-        typeof (weather as Weather).main.temp_min === 'number' &&
-        typeof (weather as Weather).main.temp_max === 'number'
-    )
-}
+// function isWeatherResponse(weather: unknown) : weather is Weather {
+//     return (
+//         Boolean(weather) &&
+//         typeof weather === 'object' &&
+//         typeof (weather as Weather).name === 'string' &&
+//         typeof (weather as Weather).main.temp === 'number' &&
+//         typeof (weather as Weather).main.temp_min === 'number' &&
+//         typeof (weather as Weather).main.temp_max === 'number'
+//     )
+// }
+
+// Zod Schema
+const Weather = z.object({
+    name: z.string(),
+    main: z.object({
+        temp: z.number(),
+        temp_min: z.number(),
+        temp_max: z.number()
+    })
+})
+
+type Weather = z.infer<typeof Weather>
+
+
 
 export default function useWeather() {
 
@@ -33,15 +48,25 @@ export default function useWeather() {
             // console.log(weatherResult.main.temp)
 
             // Type Guards
-            const { data: weatherResult } = await axios<Weather>(weatherUrl)
-            const result = isWeatherResponse(weatherResult)
-            if (result) {
-                console.log(weatherResult.name)
-                console.log(weatherResult.main.temp)
+            // const { data: weatherResult } = await axios<Weather>(weatherUrl)
+            // const result = isWeatherResponse(weatherResult)
+            // if (result) {
+            //     console.log(weatherResult.name)
+            //     console.log(weatherResult.main.temp)
+            // } else {
+            //     console.log('Invalid weather data')
+            // }
+
+            // Zod
+            const { data: weatherResult } = await axios(weatherUrl)
+            const result = Weather.safeParse(weatherResult)
+            if (result.success) {
+                console.log(result.data.name)
+                console.log(result.data.main.temp)
             } else {
                 console.log('Invalid weather data')
             }
-            
+
         } catch (error) {
             console.log(error);
         }
